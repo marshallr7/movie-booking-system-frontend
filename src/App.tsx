@@ -11,7 +11,8 @@ type Screen = 'login' | 'movies' | 'seats' | 'payment' | 'ticket' | 'admin';
 
 interface BookingData {
   movie: Movie | null;
-  showtime: string;
+  showtimeId: number | null;
+  showtimeLabel: string;
   seats: string[];
   total: number;
 }
@@ -19,13 +20,18 @@ interface BookingData {
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('login');
   const [isAdmin, setIsAdmin] = useState(false);
+
   const [bookingData, setBookingData] = useState<BookingData>({
     movie: null,
-    showtime: '',
+    showtimeId: null,
+    showtimeLabel: '',
     seats: [],
     total: 0,
   });
 
+  // --------------------------
+  // LOGIN
+  // --------------------------
   const handleLogin = (adminStatus: boolean) => {
     setIsAdmin(adminStatus);
     setCurrentScreen(adminStatus ? 'admin' : 'movies');
@@ -36,22 +42,51 @@ export default function App() {
     setIsAdmin(false);
     setBookingData({
       movie: null,
-      showtime: '',
+      showtimeId: null,
+      showtimeLabel: '',
       seats: [],
       total: 0,
     });
   };
 
+  // --------------------------
+  // MOVIE SELECT → SEATS
+  // --------------------------
   const handleSelectMovie = (movie: Movie) => {
-    setBookingData({ ...bookingData, movie });
+    setBookingData({
+      ...bookingData,
+      movie,
+    });
     setCurrentScreen('seats');
   };
 
-  const handleConfirmSeats = (showtime: string, seats: string[], total: number) => {
-    setBookingData({ ...bookingData, showtime, seats, total });
+  // --------------------------
+  // SEATS SELECTED → PAYMENT
+  // from SeatSelectionScreen:
+  //   showtimeId
+  //   showtimeLabel
+  //   seats
+  //   total
+  // --------------------------
+  const handleConfirmSeats = (
+    showtimeId: number,
+    showtimeLabel: string,
+    seats: string[],
+    total: number
+  ) => {
+    setBookingData({
+      ...bookingData,
+      showtimeId,
+      showtimeLabel,
+      seats,
+      total,
+    });
     setCurrentScreen('payment');
   };
 
+  // --------------------------
+  // PAYMENT → TICKET
+  // --------------------------
   const handlePaymentSuccess = () => {
     setCurrentScreen('ticket');
   };
@@ -59,21 +94,28 @@ export default function App() {
   const handleBackToHome = () => {
     setBookingData({
       movie: null,
-      showtime: '',
+      showtimeId: null,
+      showtimeLabel: '',
       seats: [],
       total: 0,
     });
     setCurrentScreen('movies');
   };
 
+  // --------------------------
+  // RENDER SCREENS
+  // --------------------------
   return (
     <>
       {currentScreen === 'login' && <LoginScreen onLogin={handleLogin} />}
-      
+
       {currentScreen === 'movies' && (
-        <MovieSelectionScreen onSelectMovie={handleSelectMovie} onLogout={handleLogout} />
+        <MovieSelectionScreen
+          onSelectMovie={handleSelectMovie}
+          onLogout={handleLogout}
+        />
       )}
-      
+
       {currentScreen === 'seats' && bookingData.movie && (
         <SeatSelectionScreen
           movie={bookingData.movie}
@@ -81,30 +123,34 @@ export default function App() {
           onConfirm={handleConfirmSeats}
         />
       )}
-      
-      {currentScreen === 'payment' && bookingData.movie && (
-        <PaymentScreen
-          movie={bookingData.movie}
-          showtime={bookingData.showtime}
-          seats={bookingData.seats}
-          total={bookingData.total}
-          onBack={() => setCurrentScreen('seats')}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
-      )}
-      
-      {currentScreen === 'ticket' && bookingData.movie && (
-        <TicketScreen
-          movie={bookingData.movie}
-          showtime={bookingData.showtime}
-          seats={bookingData.seats}
-          total={bookingData.total}
-          onBackToHome={handleBackToHome}
-        />
-      )}
-      
+
+      {currentScreen === 'payment' &&
+        bookingData.movie &&
+        bookingData.showtimeId !== null && (
+          <PaymentScreen
+            movie={bookingData.movie}
+            showtime={bookingData.showtimeLabel}
+            seats={bookingData.seats}
+            total={bookingData.total}
+            onBack={() => setCurrentScreen('seats')}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        )}
+
+      {currentScreen === 'ticket' &&
+        bookingData.movie &&
+        bookingData.showtimeId !== null && (
+          <TicketScreen
+            movie={bookingData.movie}
+            showtime={bookingData.showtimeLabel}
+            seats={bookingData.seats}
+            total={bookingData.total}
+            onBackToHome={handleBackToHome}
+          />
+        )}
+
       {currentScreen === 'admin' && <AdminPanel onLogout={handleLogout} />}
-      
+
       <Toaster />
     </>
   );
