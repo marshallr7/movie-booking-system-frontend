@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -17,23 +18,10 @@ import { Badge } from "./ui/badge";
 import { Film, LogOut, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-interface AdminPanelProps {
-  onLogout: () => void;
-}
+export function AdminPanel() {
+  const navigate = useNavigate();
 
-interface Movie {
-  movieId: number;
-  title: string;
-  description: string;
-  genre: string;
-  durationMin: number;
-  rating: string;
-  releaseDate: string;
-  coverImageUrl: string;
-}
-
-export function AdminPanel({ onLogout }: AdminPanelProps) {
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -53,15 +41,13 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
 
   const [form, setForm] = useState({ ...emptyMovieForm });
 
-  // Load movies from backend
   const loadMovies = async () => {
     try {
       const res = await fetch("http://localhost:5086/api/movies");
-      if (!res.ok) throw new Error("Failed to load movies");
       const data = await res.json();
       setMovies(data);
-    } catch (err) {
-      toast.error("Error loading movies from backend");
+    } catch {
+      toast.error("Failed to load movies");
     } finally {
       setLoading(false);
     }
@@ -71,7 +57,6 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
     loadMovies();
   }, []);
 
-  // Add Movie
   const handleAdd = async () => {
     try {
       const res = await fetch("http://localhost:5086/api/movies", {
@@ -80,19 +65,17 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Create failed.");
+      if (!res.ok) throw new Error();
 
       toast.success("Movie added");
       setIsAddOpen(false);
-      setForm({ ...emptyMovieForm });
       loadMovies();
-    } catch (err) {
-      toast.error("Failed to add movie");
+    } catch {
+      toast.error("Create failed");
     }
   };
 
-  // Start Edit
-  const openEdit = (movie: Movie) => {
+  const openEdit = (movie: any) => {
     setEditMovieId(movie.movieId);
     setForm({
       title: movie.title,
@@ -106,10 +89,7 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
     setIsEditOpen(true);
   };
 
-  // Submit Edit
   const handleEdit = async () => {
-    if (editMovieId === null) return;
-
     try {
       const res = await fetch(
         `http://localhost:5086/api/movies/${editMovieId}`,
@@ -120,69 +100,60 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
         }
       );
 
-      if (!res.ok) throw new Error("Update failed");
+      if (!res.ok) throw new Error();
 
-      toast.success("Movie updated");
+      toast.success("Updated");
       setIsEditOpen(false);
-      setForm({ ...emptyMovieForm });
-      setEditMovieId(null);
       loadMovies();
-    } catch (err) {
-      toast.error("Failed to update movie");
+    } catch {
+      toast.error("Update failed");
     }
   };
 
-  // Delete Movie
   const handleDelete = async (id: number) => {
     try {
       const res = await fetch(`http://localhost:5086/api/movies/${id}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Delete failed");
+      if (!res.ok) throw new Error();
 
-      toast.success("Movie deleted");
+      toast.success("Deleted");
       loadMovies();
-    } catch (err) {
-      toast.error("Failed to delete movie");
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+
       {/* Header */}
-      <div className="bg-black/50 backdrop-blur-sm border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-purple-600 p-2 rounded-lg">
-                <Film className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-white text-2xl">Movie Booking System Admin</h1>
-                <p className="text-gray-400 text-sm">Theater Management</p>
-              </div>
-            </div>
-            <Button variant="outline" onClick={onLogout} className="gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+      <div className="bg-black/50 border-b border-gray-800 p-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="bg-purple-600 p-2 rounded-lg">
+            <Film className="w-6 h-6 text-white" />
           </div>
+          <h1 className="text-white text-2xl">Admin Panel</h1>
         </div>
+        <Button variant="outline" onClick={() => navigate("/login")} className="gap-2">
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
       </div>
 
-      {/* Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="movies">
-          <TabsList className="bg-gray-800 border-gray-700">
+          <TabsList>
             <TabsTrigger value="movies">Movies</TabsTrigger>
           </TabsList>
 
           <TabsContent value="movies">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between mb-4">
               <h2 className="text-white text-2xl">Manage Movies</h2>
               <Button className="bg-purple-600" onClick={() => setIsAddOpen(true)}>
-                <Plus className="w-4 h-4" /> Add Movie
+                <Plus />
+                Add Movie
               </Button>
             </div>
 
@@ -202,8 +173,9 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
                         <TableHead className="text-gray-300 text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
+
                     <TableBody>
-                      {movies.map((m) => (
+                      {movies.map((m: any) => (
                         <TableRow key={m.movieId}>
                           <TableCell className="text-white">{m.title}</TableCell>
                           <TableCell>
@@ -217,24 +189,17 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
                             {m.releaseDate.split("T")[0]}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              onClick={() => openEdit(m)}
-                              className="text-gray-300"
-                            >
-                              <Pencil className="w-4 h-4" />
+                            <Button variant="ghost" onClick={() => openEdit(m)}>
+                              <Pencil />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleDelete(m.movieId)}
-                              className="text-red-400"
-                            >
-                              <Trash2 className="w-4 h-4" />
+                            <Button variant="ghost" onClick={() => handleDelete(m.movieId)}>
+                              <Trash2 className="text-red-400" />
                             </Button>
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
+
                   </Table>
                 )}
               </CardContent>
@@ -243,7 +208,7 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
         </Tabs>
       </div>
 
-      {/* ADD MOVIE DIALOG */}
+      {/* ADD MOVIE */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="bg-gray-800 text-white border-gray-700">
           <DialogHeader>
@@ -254,11 +219,9 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
             <div key={key} className="mb-3">
               <Label>{key}</Label>
               <Input
-                className="bg-gray-900 border-gray-700 text-white"
+                className="bg-gray-900 border-gray-700"
                 value={(form as any)[key]}
-                onChange={(e) =>
-                  setForm({ ...form, [key]: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
               />
             </div>
           ))}
@@ -269,7 +232,7 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
         </DialogContent>
       </Dialog>
 
-      {/* EDIT MOVIE DIALOG */}
+      {/* EDIT MOVIE */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="bg-gray-800 text-white border-gray-700">
           <DialogHeader>
@@ -280,11 +243,9 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
             <div key={key} className="mb-3">
               <Label>{key}</Label>
               <Input
-                className="bg-gray-900 border-gray-700 text-white"
+                className="bg-gray-900 border-gray-700"
                 value={(form as any)[key]}
-                onChange={(e) =>
-                  setForm({ ...form, [key]: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
               />
             </div>
           ))}
@@ -294,6 +255,9 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
           </Button>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
+
+export default AdminPanel;

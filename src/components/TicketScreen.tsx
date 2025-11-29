@@ -1,99 +1,86 @@
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { CheckCircle2, Download, Mail, Home } from 'lucide-react';
-import { Movie } from './MovieSelectionScreen';
-import QRCode from 'react-qr-code';
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { ArrowLeft } from "lucide-react";
 
-interface TicketScreenProps {
-  movie: Movie;
-  showtime: string;
-  seats: string[];
-  total: number;
-  onBackToHome: () => void;
-}
+export default function TicketScreen() {
+  const navigate = useNavigate();
+  const { state } = useLocation();
 
-export function TicketScreen({
-  movie,
-  showtime,
-  seats,
-  total,
-  onBackToHome,
-}: TicketScreenProps) {
-  const bookingId = `BK${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-  const qrCodeData = JSON.stringify({
-    bookingId,
-    movie: movie.title,
-    showtime,
-    seats,
-    total: (total + 2.50).toFixed(2),
-  });
+  if (!state) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        <p>No booking data found.</p>
+      </div>
+    );
+  }
+
+  const { movie, showtime, seats, bookingId, total } = state;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
-              <CheckCircle2 className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6">
+
+      {/* BACK BUTTON */}
+      <Button
+        onClick={() => navigate("/movies")}
+        className="mb-8 bg-gray-900 hover:bg-gray-800"
+      >
+        <ArrowLeft className="mr-2 w-4 h-4" /> Back to Movies
+      </Button>
+
+      {/* CENTERED CARD */}
+      <div className="max-w-2xl mx-auto">
+        <Card className="bg-gray-800 border-gray-700 shadow-2xl rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-purple-400">
+              Booking Confirmation
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-6 text-gray-300 text-lg">
+
+            <div>
+              <p className="font-semibold text-white mb-1">Booking ID</p>
+              <p className="text-purple-400 font-bold">#{bookingId}</p>
             </div>
-            <h1 className="text-white text-3xl mb-2">Payment Successful!</h1>
-            <p className="text-gray-400">Your tickets have been booked successfully</p>
-          </div>
 
-          <Card className="bg-gray-800 border-gray-700 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/80 text-sm mb-1">Booking ID</p>
-                  <p className="text-white text-xl">{bookingId}</p>
-                </div>
-                <Badge className="bg-white text-purple-600">E-Ticket</Badge>
-              </div>
+            <div>
+              <p className="font-semibold text-white mb-1">Movie</p>
+              <p>{movie?.title}</p>
             </div>
 
-            <CardContent className="p-6">
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h2 className="text-white text-2xl mb-4">{movie.title}</h2>
-                  <p className="text-gray-400 text-sm">Showtime</p>
-                  <p className="text-white">{showtime}</p>
-                  <p className="text-gray-400 text-sm mt-4">Seats</p>
-                  <p className="text-white">{seats.join(', ')}</p>
-                  <p className="text-gray-400 text-sm mt-4">Total Paid</p>
-                  <p className="text-white text-xl">${(total + 2.50).toFixed(2)}</p>
-                </div>
+            <div>
+              <p className="font-semibold text-white mb-1">Showtime</p>
+              <p>{new Date(showtime.showDateTime).toLocaleString()}</p>
+            </div>
 
-                <div className="flex flex-col items-center justify-center">
-                  <div className="bg-white p-4 rounded-lg mb-3">
-                    <QRCode value={qrCodeData} size={180} />
-                  </div>
-                  <p className="text-gray-400 text-sm text-center">
-                    Scan this QR code at the theater entrance
-                  </p>
-                </div>
-              </div>
+            <div>
+              <p className="font-semibold text-white mb-1">Seats</p>
+              <p className="text-purple-300 font-semibold">
+                {seats.map((s: any) => s.label).join(", ")}
+              </p>
+            </div>
 
-              <div className="grid md:grid-cols-3 gap-3">
-                <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
-                <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email Ticket
-                </Button>
-                <Button
-                  onClick={onBackToHome}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  <Home className="w-4 h-4 mr-2" />
-                  Back to Home
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <div>
+              <p className="font-semibold text-white mb-1">Total Paid</p>
+              <p className="text-green-400 text-xl font-bold">${total}</p>
+            </div>
+
+            <div className="pt-4 border-t border-gray-700">
+              <p className="text-gray-400 text-sm">
+                Show this ticket at the entrance.
+              </p>
+            </div>
+
+            {/* BUTTON */}
+            <Button
+              className="w-full bg-purple-600 hover:bg-purple-700 py-4 text-lg font-semibold mt-4"
+              onClick={() => navigate("/movies")}
+            >
+              Back to Movies
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -1,157 +1,37 @@
-import { useState } from 'react';
-import { LoginScreen } from './components/LoginScreen';
-import { MovieSelectionScreen, Movie } from './components/MovieSelectionScreen';
-import { SeatSelectionScreen } from './components/SeatSelectionScreen';
-import { PaymentScreen } from './components/PaymentScreen';
-import { TicketScreen } from './components/TicketScreen';
-import { AdminPanel } from './components/AdminPanel';
-import { Toaster } from './components/ui/sonner';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-type Screen = 'login' | 'movies' | 'seats' | 'payment' | 'ticket' | 'admin';
-
-interface BookingData {
-  movie: Movie | null;
-  showtimeId: number | null;
-  showtimeLabel: string;
-  seats: string[];
-  total: number;
-}
+import LoginScreen from "./components/LoginScreen";
+import MovieSelectionScreen from "./components/MovieSelectionScreen";
+import SeatSelectionScreen from "./components/SeatSelectionScreen";
+import PaymentScreen from "./components/PaymentScreen";
+import TicketScreen from "./components/TicketScreen";
+import AdminPanel from "./components/AdminPanel";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('login');
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  const [bookingData, setBookingData] = useState<BookingData>({
-    movie: null,
-    showtimeId: null,
-    showtimeLabel: '',
-    seats: [],
-    total: 0,
-  });
-
-  // --------------------------
-  // LOGIN
-  // --------------------------
-  const handleLogin = (adminStatus: boolean) => {
-    setIsAdmin(adminStatus);
-    setCurrentScreen(adminStatus ? 'admin' : 'movies');
-  };
-
-  const handleLogout = () => {
-    setCurrentScreen('login');
-    setIsAdmin(false);
-    setBookingData({
-      movie: null,
-      showtimeId: null,
-      showtimeLabel: '',
-      seats: [],
-      total: 0,
-    });
-  };
-
-  // --------------------------
-  // MOVIE SELECT → SEATS
-  // --------------------------
-  const handleSelectMovie = (movie: Movie) => {
-    setBookingData({
-      ...bookingData,
-      movie,
-    });
-    setCurrentScreen('seats');
-  };
-
-  // --------------------------
-  // SEATS SELECTED → PAYMENT
-  // from SeatSelectionScreen:
-  //   showtimeId
-  //   showtimeLabel
-  //   seats
-  //   total
-  // --------------------------
-  const handleConfirmSeats = (
-    showtimeId: number,
-    showtimeLabel: string,
-    seats: string[],
-    total: number
-  ) => {
-    setBookingData({
-      ...bookingData,
-      showtimeId,
-      showtimeLabel,
-      seats,
-      total,
-    });
-    setCurrentScreen('payment');
-  };
-
-  // --------------------------
-  // PAYMENT → TICKET
-  // --------------------------
-  const handlePaymentSuccess = () => {
-    setCurrentScreen('ticket');
-  };
-
-  const handleBackToHome = () => {
-    setBookingData({
-      movie: null,
-      showtimeId: null,
-      showtimeLabel: '',
-      seats: [],
-      total: 0,
-    });
-    setCurrentScreen('movies');
-  };
-
-  // --------------------------
-  // RENDER SCREENS
-  // --------------------------
   return (
-    <>
-      {currentScreen === 'login' && <LoginScreen onLogin={handleLogin} />}
+    <Router>
+      <Routes>
 
-      {currentScreen === 'movies' && (
-        <MovieSelectionScreen
-          onSelectMovie={handleSelectMovie}
-          onLogout={handleLogout}
-        />
-      )}
+        {/* Login */}
+        <Route path="/" element={<LoginScreen />} />
+        <Route path="/login" element={<LoginScreen />} />   {/* <-- FIX */}
 
-      {currentScreen === 'seats' && bookingData.movie && (
-        <SeatSelectionScreen
-          movie={bookingData.movie}
-          onBack={() => setCurrentScreen('movies')}
-          onConfirm={handleConfirmSeats}
-        />
-      )}
+        {/* Movies */}
+        <Route path="/movies" element={<MovieSelectionScreen />} />
 
-      {currentScreen === 'payment' &&
-        bookingData.movie &&
-        bookingData.showtimeId !== null && (
-          <PaymentScreen
-            movie={bookingData.movie}
-            showtime={bookingData.showtimeLabel}
-            seats={bookingData.seats}
-            total={bookingData.total}
-            onBack={() => setCurrentScreen('seats')}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-        )}
+        {/* Seat selection */}
+        <Route path="/seats/:movieId" element={<SeatSelectionScreen />} />
 
-      {currentScreen === 'ticket' &&
-        bookingData.movie &&
-        bookingData.showtimeId !== null && (
-          <TicketScreen
-            movie={bookingData.movie}
-            showtime={bookingData.showtimeLabel}
-            seats={bookingData.seats}
-            total={bookingData.total}
-            onBackToHome={handleBackToHome}
-          />
-        )}
+        {/* Payment */}
+        <Route path="/payment" element={<PaymentScreen />} />
 
-      {currentScreen === 'admin' && <AdminPanel onLogout={handleLogout} />}
+        {/* Ticket */}
+        <Route path="/ticket" element={<TicketScreen />} />
 
-      <Toaster />
-    </>
+        {/* Admin */}
+        <Route path="/admin" element={<AdminPanel />} />
+
+      </Routes>
+    </Router>
   );
 }

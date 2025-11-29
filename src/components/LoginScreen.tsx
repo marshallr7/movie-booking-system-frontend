@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -6,11 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Film } from 'lucide-react';
 
-interface LoginScreenProps {
-  onLogin: (isAdmin: boolean) => void;
-}
+export function LoginScreen() {
+  const navigate = useNavigate();
 
-export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
@@ -31,7 +30,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     setLoginError('');
 
     if (!validateEmail(loginEmail)) {
-      setLoginError('Please enter a valid email address');
+      setLoginError('Please enter a valid email');
       return;
     }
 
@@ -41,9 +40,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
 
     if (loginEmail === 'admin@theater.com' && loginPassword === 'admin123') {
-      onLogin(true);
+      navigate('/admin');
     } else {
-      onLogin(false);
+      navigate('/movies');
     }
   };
 
@@ -57,7 +56,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
 
     if (!validateEmail(registerEmail)) {
-      setRegisterError('Please enter a valid email address');
+      setRegisterError('Please enter a valid email');
       return;
     }
 
@@ -71,7 +70,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
-    onLogin(false);
+    
+    navigate('/movies');
   };
 
   return (
@@ -87,43 +87,37 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           <p className="text-gray-300">Your Premium Movie Experience</p>
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue="login">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
 
+          {/* LOGIN */}
           <TabsContent value="login">
             <Card>
-              <CardHeader></CardHeader>
               <CardContent>
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label>Email</Label>
                     <Input
-                      id="login-email"
                       type="email"
-                      placeholder="your@email.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label>Password</Label>
                     <Input
-                      id="login-password"
                       type="password"
-                      placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      required
                     />
                   </div>
 
                   {loginError && (
-                    <div className="text-red-500 text-sm">{loginError}</div>
+                    <p className="text-red-500 text-sm">{loginError}</p>
                   )}
 
                   <Button type="submit" className="w-full">
@@ -138,6 +132,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             </Card>
           </TabsContent>
 
+          {/* REGISTER */}
           <TabsContent value="register">
             <Card>
               <CardHeader>
@@ -146,55 +141,43 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               <CardContent>
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-name">Full Name</Label>
+                    <Label>Name</Label>
                     <Input
-                      id="register-name"
-                      type="text"
-                      placeholder="John Doe"
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
-                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
+                    <Label>Email</Label>
                     <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="your@email.com"
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
-                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
+                    <Label>Password</Label>
                     <Input
-                      id="register-password"
                       type="password"
-                      placeholder="••••••••"
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
-                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                    <Label>Confirm Password</Label>
                     <Input
-                      id="register-confirm-password"
                       type="password"
-                      placeholder="••••••••"
                       value={registerConfirmPassword}
-                      onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                      required
+                      onChange={(e) =>
+                        setRegisterConfirmPassword(e.target.value)
+                      }
                     />
                   </div>
 
                   {registerError && (
-                    <div className="text-red-500 text-sm">{registerError}</div>
+                    <p className="text-red-500 text-sm">{registerError}</p>
                   )}
 
                   <Button type="submit" className="w-full">
@@ -210,3 +193,4 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   );
 }
 
+export default LoginScreen;
