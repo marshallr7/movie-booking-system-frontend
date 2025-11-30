@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
+import { API_URL } from "../../config";
 
 export default function SeatSelectionScreen() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function SeatSelectionScreen() {
 
   // Load movie
   useEffect(() => {
-    fetch("http://localhost:5086/api/movies")
+    fetch(`${API_URL}movies`)
       .then((r) => r.json())
       .then((data) => {
         const m = data.find((x: any) => x.movieId === Number(movieId));
@@ -27,7 +28,7 @@ export default function SeatSelectionScreen() {
 
   // Load showtimes
   useEffect(() => {
-    fetch("http://localhost:5086/api/showtimes")
+    fetch(`${API_URL}showtimes`)
       .then((r) => r.json())
       .then((data) => {
         const filtered = data.filter((s: any) => s.movieId === Number(movieId));
@@ -40,7 +41,7 @@ export default function SeatSelectionScreen() {
   useEffect(() => {
     if (!selectedShowtime) return;
 
-    fetch("http://localhost:5086/api/seats")
+    fetch(`${API_URL}seats`)
       .then((r) => r.json())
       .then((data) => {
         const filtered = data.filter(

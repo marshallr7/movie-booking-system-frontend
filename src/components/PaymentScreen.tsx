@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { API_URL } from "../../config";
 
 export default function PaymentScreen() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function PaymentScreen() {
       seatIds: seats.map((s: any) => s.backendId),
     };
 
-    const res = await fetch("http://localhost:5086/api/bookings", {
+    const res = await fetch(`${API_URL}bookings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

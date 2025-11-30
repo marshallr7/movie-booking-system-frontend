@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug React in Chrome",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:5173/login",
+        "webRoot": "${workspaceFolder}/src",
+        "sourceMaps": true,
+        "trace": true
+      }
+    ]
+  }
+  

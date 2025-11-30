@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter } from './ui/card';
 import { Badge } from './ui/badge';
 import { Search, Film, LogOut, Clock, Star } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { API_URL } from "../../config";
 
 export interface Movie {
   movieId: number;
@@ -27,13 +28,14 @@ export function MovieSelectionScreen() {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const response = await fetch('http://localhost:5086/api/movies');
+        const response = await fetch(`${API_URL}movies`);
         if (!response.ok) throw new Error('Failed to load movies');
 
         const data = await response.json();
         setMovies(data);
-      } catch {
-        setError('Unable to reach backend server.');
+      } catch(err) {
+        console.error('Fetch error:', err);
+      setError(`Unable to reach backend server: ${err}`);
       } finally {
         setLoading(false);
       }

@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { Film, LogOut, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { API_URL } from "../../config";
 
 export function AdminPanel() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export function AdminPanel() {
 
   const loadMovies = async () => {
     try {
-      const res = await fetch("http://localhost:5086/api/movies");
+      const res = await fetch('${API_URL}movies');
       const data = await res.json();
       setMovies(data);
     } catch {
@@ -59,7 +60,7 @@ export function AdminPanel() {
 
   const handleAdd = async () => {
     try {
-      const res = await fetch("http://localhost:5086/api/movies", {
+      const res = await fetch('${API_URL}movies', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -92,7 +93,7 @@ export function AdminPanel() {
   const handleEdit = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5086/api/movies/${editMovieId}`,
+        `${API_URL}movies/${editMovieId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -112,7 +113,7 @@ export function AdminPanel() {
 
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5086/api/movies/${id}`, {
+      const res = await fetch(`${API_URL}movies/${id}`, {
         method: "DELETE",
       });
 
